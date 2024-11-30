@@ -1,0 +1,33 @@
+def simplify_path(path):
+    if not path.startswith("/"):
+        return "Invalid Path" 
+    stack = []
+    i = 0
+    while i < len(path):
+        while i < len(path) and path[i] == "/":
+            i += 1
+        
+        start = i
+        while i < len(path) and path[i] != "/":
+            i += 1
+        component = path[start:i]
+        
+        if component == "" or component == ".":
+            continue  
+        elif component == "..":
+            if stack:
+                stack.pop()  
+        else:
+            stack.append(component)  
+      
+    simplified_path = "/" + "/".join(stack)
+    return simplified_path
+
+def main():
+    
+    path = input()
+
+    print(simplify_path(path))
+
+if __name__ == "__main__":
+    main()

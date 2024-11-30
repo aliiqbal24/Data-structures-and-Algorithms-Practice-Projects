@@ -1,0 +1,62 @@
+from collections import deque
+import re
+
+# Queue to track stocks purchased
+stock_queue = deque()
+
+# Initialize total capital gains
+capital_gains = 0
+
+# Define functions
+def buy_stock(queue, shares, price):
+    """Add shares to the queue."""
+    queue.append((shares, price))
+
+def sell_stock(queue, shares_to_sell, sell_price):
+    """Sell shares from the queue using FIFO protocol and calculate capital gains."""
+    global capital_gains
+    while shares_to_sell > 0:
+        if not queue:
+            print("Not enough shares to sell.")
+            return
+        
+        # Get the oldest shares from the queue
+        old_shares, buy_price = queue.popleft()
+        
+        if old_shares <= shares_to_sell:
+            # Sell all shares from this batch
+            capital_gains += old_shares * (sell_price - buy_price)
+            shares_to_sell -= old_shares
+        else:
+            # Sell part of the shares from this batch
+            capital_gains += shares_to_sell * (sell_price - buy_price)
+            queue.appendleft((old_shares - shares_to_sell, buy_price))
+            shares_to_sell = 0
+
+# example input
+transactions = [
+    "Buy 100 shares at $10 each",
+    "Buy 20 shares at $24 each",
+    "Buy 200 shares at $36 each",
+    "Sell 150 shares at $30 each"
+]
+
+for transaction in transactions:
+    # Match Buy or Sell transactions
+    match_buy = re.match(r"Buy (\d+) shares? at \$(\d+) each", transaction, re.IGNORECASE)
+    match_sell = re.match(r"Sell (\d+) shares? at \$(\d+) each", transaction, re.IGNORECASE)
+    
+    if match_buy:
+        shares = int(match_buy.group(1))
+        price = int(match_buy.group(2))
+        buy_stock(stock_queue, shares, price)
+    elif match_sell:
+        shares = int(match_sell.group(1))
+        price = int(match_sell.group(2))
+        sell_stock(stock_queue, shares, price)
+    else:
+        print(f"Invalid transaction format: {transaction}")
+
+# Output the total capital gains
+print(f"Total capital gains: ${capital_gains}")
+
